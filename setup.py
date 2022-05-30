@@ -75,10 +75,15 @@ setup(
             '*.txt',
         ],
     },
+    project_urls={
+        "Documentation": "https://chemist.readthedocs.io/en/latest/",
+        "Source Code": "https://github.com/gabrielfalcao/chemist",
+        "Issue Tracker": "https://github.com/gabrielfalcao/chemist/issues",
+        "Test Coverage": "https://codecov.io/gh/gabrielfalcao/chemist",
+    },
     extras_require={
         'mariadb': extras.mysql,
         'mysql': extras.mysql,
-        'psycopg2': extras.postgres,
         'postgres': extras.postgres,
         'postgresql': extras.postgres,
     },

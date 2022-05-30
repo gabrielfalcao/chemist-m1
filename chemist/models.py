@@ -1,31 +1,27 @@
 # -*- coding: utf-8 -*-
-from six.moves import builtins as __builtin__
-from six import PY2
-
-import re
-
-import nacl.secret
-import nacl.utils
-import inspect
 import datetime
+import inspect
 import logging
-from decimal import Decimal
+import re
 from collections import OrderedDict
-from six import with_metaclass
+from decimal import Decimal
+
 import dateutil.parser
+from cryptography.fernet import Fernet
 
-from chemist.orm import ORM
-from chemist.orm import get_engine
-from chemist.orm import format_decimal
+from six import PY2, with_metaclass
+from six.moves import builtins as __builtin__
 
+from chemist.exceptions import (
+    EngineNotSpecified,
+    FieldTypeValueError,
+    InvalidColumnName,
+    InvalidModelDeclaration,
+    MultipleEnginesSpecified,
+)
 from chemist.managers import Manager
+from chemist.orm import format_decimal, get_engine, ORM
 from chemist.serializers import json
-from chemist.exceptions import FieldTypeValueError
-from chemist.exceptions import MultipleEnginesSpecified
-from chemist.exceptions import EngineNotSpecified
-from chemist.exceptions import InvalidColumnName
-from chemist.exceptions import InvalidModelDeclaration
-
 
 logger = logging.getLogger(__name__)
 
@@ -200,7 +196,7 @@ class Model(with_metaclass(ORM, object)):
 
         key = keymap[attr]
 
-        box = nacl.secret.SecretBox(key)
+        box = Fernet(key)
         return box
 
     def encrypt_attribute(self, attr, value):
@@ -208,8 +204,7 @@ class Model(with_metaclass(ORM, object)):
         if not box:
             return value
 
-        nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
-        return box.encrypt(str(value), nonce)
+        return box.encrypt(str(value))
 
     def decrypt_attribute(self, attr, value):
         box = self.get_encryption_box_for_attribute(attr)
@@ -542,8 +537,8 @@ class Model(with_metaclass(ORM, object)):
             if col.primary_key:
                 return name
 
-    def get_pk_value(cls):
-        return getattr(cls, cls.get_pk_name())
+    def get_pk_value(self):
+        return getattr(self, self.get_pk_name())
 
     @classmethod
     def get_pk_col(cls, name):
